@@ -20,41 +20,41 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('GPTRus.updateChat', (resp) => {
+        vscode.commands.registerCommand('yaGPT.updateChat', (resp) => {
             provider.updateChat(resp);
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand('GPTRus.initView', (resp) => {
+        vscode.commands.registerCommand('yaGPT.initView', (resp) => {
             provider.initView(resp);
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('GPTRus.saveSettings', (resp) => {
+        vscode.commands.registerCommand('yaGPT.saveSettings', (resp) => {
             provider.saveSettingsInGlobalState(resp);
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('GPTRus.clearChat', (resp) => {
+        vscode.commands.registerCommand('yaGPT.clearChat', (resp) => {
             provider.clearChat();
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand('GPTRus.goToSettings', () => {
+        vscode.commands.registerCommand('yaGPT.goToSettings', () => {
             provider.goToSettings();
         })
     );
     context.subscriptions.push(
-        vscode.commands.registerCommand('GPTRus.explainSelected', (data) => {
+        vscode.commands.registerCommand('yaGPT.explainSelected', (data) => {
             provider.explainSelected();
         })
     );
 }
 
 class ChatViewProvider implements vscode.WebviewViewProvider {
-    public static readonly viewType = 'GPTRus.chatView';
+    public static readonly viewType = 'yaGPT.chatView';
 
     private _view?: vscode.WebviewView;
 
@@ -87,11 +87,11 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
                 }
                 case 'controllerOnLoaded': {
                     vscode.commands.executeCommand(
-                        'GPTRus.initView',
+                        'yaGPT.initView',
                         this.globalState.get('settings') ? 'chat' : 'home'
                     );
                     vscode.commands.executeCommand(
-                        'GPTRus.updateChat',
+                        'yaGPT.updateChat',
                         chatState
                     );
                     break;
@@ -124,16 +124,16 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
     public async saveSettingsInGlobalState(settings: settings) {
         await this.globalState.update('settings', settings);
         vscode.window.showInformationMessage(`Настройки сохранены`);
-        vscode.commands.executeCommand('GPTRus.initView', 'chat');
+        vscode.commands.executeCommand('yaGPT.initView', 'chat');
     }
 
     public clearChat() {
         chatState = [];
-        vscode.commands.executeCommand('GPTRus.updateChat', chatState);
+        vscode.commands.executeCommand('yaGPT.updateChat', chatState);
     }
 
     public goToSettings() {
-        vscode.commands.executeCommand('GPTRus.initView', 'home');
+        vscode.commands.executeCommand('yaGPT.initView', 'home');
     }
 
     public explainSelected() {
@@ -150,7 +150,7 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
             role: 'system',
             text: 'Ты — опытный программист.',
         });
-        vscode.commands.executeCommand('workbench.view.extension.GPTrus');
+        vscode.commands.executeCommand('workbench.view.extension.yaGPT');
         this.sendMessage(
             'Объясни следующий код: \n\n ```\n' + selection + '\n```'
         );
@@ -158,12 +158,12 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
 
     public sendMessage(message: string) {
         chatState.push({ role: 'user', text: message });
-        vscode.commands.executeCommand('GPTRus.updateChat', chatState);
+        vscode.commands.executeCommand('yaGPT.updateChat', chatState);
 
         const settings: settings | undefined = this.globalState.get('settings');
 
         const newPost = {
-            modelUri: `gpt://${settings?.catalogueId}/yandexgpt-lite`,
+            modelUri: `gpt://${settings?.catalogueId}/yandexgpt`,
             completionOptions: {
                 stream: false,
                 temperature: 0.6,
@@ -189,16 +189,16 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
                 const result = response.result;
                 if (response.error) {
                     vscode.window.showErrorMessage(
-                        `ОШИБКА ОТ GPTrus: ${JSON.stringify(response)}`
+                        `ОШИБКА ОТ yaGPT: ${JSON.stringify(response)}`
                     );
                 }
                 chatState.push(result?.alternatives[0].message);
-                vscode.commands.executeCommand('GPTRus.updateChat', chatState);
+                vscode.commands.executeCommand('yaGPT.updateChat', chatState);
             })
             .catch((err) => {
                 console.log('error', err);
                 vscode.window.showErrorMessage(
-                    `ОШИБКА ОТ GPTrus: ${JSON.stringify(err)}`
+                    `ОШИБКА ОТ yaGPT: ${JSON.stringify(err)}`
                 );
             });
     }
@@ -238,7 +238,7 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
 				<link href="${styleVSCodeUri}" rel="stylesheet">
 				<link href="${styleMainUri}" rel="stylesheet">
 
-				<title>Chat GPTRus</title>
+				<title>Chat yaGPT</title>
 			</head>
 			<body>
 				<div id="chat-area" class="hide">

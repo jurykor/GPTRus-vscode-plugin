@@ -52,6 +52,18 @@
         "title": "Объясни выделенный кусок"
       },
       {
+        "command": "yaGPT.commentSelected",
+        "title": "Прокомментируй выделенный кусок"
+      },
+      {
+        "command": "yaGPT.fixSelected",
+        "title": "Исправь выделенный кусок"
+      },
+      {
+        "command": "yaGPT.modernSelected",
+        "title": "Улучши выделенный кусок"
+      },
+      {
         "command": "yaGPT.goToSettings",
         "title": "Настроить заново",
         "icon": "$(plug)"
@@ -78,6 +90,15 @@
       "editor/context": [
         {
           "command": "yaGPT.explainSelected"
+        },
+        {
+          "command": "yaGPT.commentSelected"
+        },
+        {
+          "command": "yaGPT.fixSelected"
+        },
+        {
+          "command": "yaGPT.modernSelected"
         }
       ]
     }

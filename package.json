@@ -1,105 +1,110 @@
 {
-	"name": "yaGPT",
-	"description": "Chat for yandexGPT",
-	"version": "0.3.6",
-	"publisher": "jurykor",
-	"private": false,
-	"license": "MIT",
-	"icon": "media/icon.png",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/jurykor/GPTRus-vscode-plugin"
-	},
-	"engines": {
-		"vscode": "^1.74.0"
-	},
-	"extensionKind": [
-		"ui",
-		"workspace"
-	],
-	"categories": [
-		"Programming Languages",
-		"Machine Learning",
-		"Education"
-	],
-	"activationEvents": [],
-	"main": "./out/extension.js",
-	"contributes": {
-		"views": {
-			"yaGPT": [
-				{
-					"id": "yaGPT.chatView",
-					"type": "webview",
-					"name": "Chat",
-					"icon": "media/chat-emoji-svgrepo-com.svg",
-					"contextualTitle": "Package Explorer"
-				}
-			]
-		},
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "yaGPT",
-					"title": "yaGPT",
-					"icon": "media/chat-emoji-svgrepo-com.svg"
-				}
-			]
-		},
-		"commands": [
-			{
-				"command": "yaGPT.explainSelected",
-				"title": "Объясни выделенный кусок"
-			},
-			{
-				"command": "yaGPT.goToSettings",
-				"title": "Настроить заново",
-				"icon": "$(plug)"
-			},
-			{
-				"command": "yaGPT.clearChat",
-				"title": "Очистить чат (перестанет использоваться как контекст)",
-				"icon": "$(clear-all)"
-			}
-		],
-		"menus": {
-			"view/title": [
-				{
-					"command": "yaGPT.goToSettings",
-					"group": "navigation",
-					"when": "view == yaGPT.chatView"
-				},
-				{
-					"command": "yaGPT.clearChat",
-					"group": "navigation",
-					"when": "view == yaGPT.chatView"
-				}
-			],
-			"editor/context": [
-				{
-					"command": "yaGPT.explainSelected"
-				}
-			]
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"lint": "eslint \"src/**/*.ts\"",
-		"watch": "tsc -w -p ./"
-	},
-	"devDependencies": {
-		"@eslint/js": "^9.9.0",
-		"@types/vscode": "^1.73.0",
-		"@typescript-eslint/eslint-plugin": "^6.7.0",
-		"@typescript-eslint/parser": "^6.7.0",
-		"eslint": "^8.32.0",
-		"typescript": "^5.3.2"
-	},
-	"files": [
-		".vscode/**",
-		"media/**",
-		"out/**",
-		"src/**",
-		"LICENSE.txt"
-	]
+  "name": "yagpt",
+  "displayName": "yaGPT",
+  "description": "Chat for yandexGPT",
+  "version": "0.3.6",
+  "publisher": "jurykor",
+  "private": false,
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jurykor/GPTRus-vscode-plugin"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Education"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "yaGPT": [
+        {
+          "id": "yaGPT.chatView",
+          "type": "webview",
+          "name": "Chat",
+          "icon": "media/chat-emoji-svgrepo-com.svg",
+          "contextualTitle": "Package Explorer"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "yaGPT",
+          "title": "yaGPT",
+          "icon": "media/chat-emoji-svgrepo-com.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "yaGPT.explainSelected",
+        "title": "Объясни выделенный кусок"
+      },
+      {
+        "command": "yaGPT.goToSettings",
+        "title": "Настроить заново",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "yaGPT.clearChat",
+        "title": "Очистить чат (перестанет использоваться как контекст)",
+        "icon": "$(clear-all)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "yaGPT.goToSettings",
+          "group": "navigation",
+          "when": "view == yaGPT.chatView"
+        },
+        {
+          "command": "yaGPT.clearChat",
+          "group": "navigation",
+          "when": "view == yaGPT.chatView"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "yaGPT.explainSelected"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "package_update": "npx npm i --package-lock-only",
+    "package_install": "npx npm ci",
+    "compile": "npx tsc -p ./",
+    "pack": "npx @vscode/vsce pack",
+    "lint": "npx eslint \"src/**/*.ts\"",
+    "watch": "npx tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.36.0",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+		"@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.36.0",
+    "globals": "^15.9.0",
+    "typescript": "^5.4.5"
+  },
+  "files": [
+    ".vscode/**",
+    "media/**",
+    "out/**",
+    "src/**",
+    "LICENSE.txt"
+  ]
 }

@@ -60,8 +60,8 @@
         "title": "Исправь выделенный кусок"
       },
       {
-        "command": "yaGPT.modernSelected",
-        "title": "Улучши выделенный кусок"
+        "command": "yaGPT.translateSelected",
+        "title": "Переведи выделенный кусок"
       },
       {
         "command": "yaGPT.goToSettings",
@@ -98,7 +98,7 @@
           "command": "yaGPT.fixSelected"
         },
         {
-          "command": "yaGPT.modernSelected"
+          "command": "yaGPT.translateSelected"
         }
       ]
     }
@@ -107,7 +107,7 @@
     "package_update": "npx npm i --package-lock-only",
     "package_install": "npx npm ci",
     "compile": "npx tsc -p ./",
-    "pack": "npx @vscode/vsce pack",
+    "pack": "npx vsce pack",
     "lint": "npx eslint \"src/**/*.ts\"",
     "watch": "npx tsc -w -p ./"
   },
@@ -117,8 +117,10 @@
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
 		"@typescript-eslint/parser": "^6.21.0",
+    "@vscode/vsce": "3.0.0",
     "eslint": "^8.36.0",
     "globals": "^15.9.0",
+    "node": "^20.16.0",
     "typescript": "^5.4.5"
   },
   "files": [

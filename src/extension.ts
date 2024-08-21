@@ -1,6 +1,14 @@
 import * as vscode from 'vscode';
 
-const defaultSystemPrompt = 'Ты высококвалифицированный специалист в следующих IT областях:\n- инженер-программист (software design engineer, SDE)\n- разработчик ПО (software developer, SD)\n-инженер DevOps(DevOps engineer, DevOps)\n- системный администратор (system administrator, SA)\n- администратора баз данных (database administrator, DBA).\nРешая поставленные задачи, ты строго придерживаешься спецификаций и документации по использующимся продуктам.\nЕсли исходных данные непонятны или их недостаточно, то перед генерацией ответа, ты должен задавать вопросы для уточнения контекста.';
+const defaultSystemPrompt = `Ты высококвалифицированный специалист в следующих IT областях:
+- инженер-программист (software design engineer, SDE)
+- разработчик ПО (software developer, SD)
+-инженер DevOps(DevOps engineer, DevOps)
+- системный администратор (system administrator, SA)
+- администратора баз данных (database administrator, DBA).
+Решая поставленные задачи, ты строго придерживаешься спецификаций и документации по использующимся продуктам.
+Если исходных данные непонятны или их недостаточно, то перед генерацией ответа, ты должен задавать вопросы для уточнения контекста.`;
+
 
 let chatState: { role: string; text: string }[] = [];
 type settings = {
@@ -10,7 +18,6 @@ type settings = {
 
 export function activate(context: vscode.ExtensionContext) {
   const provider = new ChatViewProvider(context.extensionUri, context.globalState);
-
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, provider)
   );
@@ -25,13 +32,11 @@ export function activate(context: vscode.ExtensionContext) {
       provider.initView(resp);
     })
   );
-
   context.subscriptions.push(
     vscode.commands.registerCommand('yaGPT.saveSettings', (resp) => {
       provider.saveSettingsInGlobalState(resp);
     })
   );
-
   context.subscriptions.push(
     vscode.commands.registerCommand('yaGPT.clearChat', (resp) => {
       provider.clearChat();
@@ -59,12 +64,16 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('yaGPT.modernSelected', (data) => {
-      provider.modernSelected();
+    vscode.commands.registerCommand('yaGPT.translateSelected', (data) => {
+      provider.translateSelected();
     })
   );
 }
 
+
+/**
+ * Provider for creating `WebviewView` elements.
+ */
 class ChatViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'yaGPT.chatView';
 
@@ -75,6 +84,20 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
     private globalState: vscode.ExtensionContext['globalState']
   ) { }
 
+
+  /**
+   * Resolves a webview view.
+   *
+   * `resolveWebviewView` is called when a view first becomes visible. This may happen when the view is
+   * first loaded or when the user hides and then shows a view again.
+   *
+   * @param webviewView Webview view to restore. The provider should take ownership of this view. The
+   *    provider must set the webview's `.html` and hook up all webview events it is interested in.
+   * @param context Additional metadata about the view being resolved.
+   * @param token Cancellation token indicating that the view being provided is no longer needed.
+   *
+   * @returns Optional thenable indicating that the view has been fully resolved.
+   */
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
@@ -151,25 +174,44 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
   public explainSelected() {
     this._processSelected(
       defaultSystemPrompt,
-      'Проанализируй и объясни следующую часть кода c точки зрения разработчика ПО. Обдумывай проблему шаг за шагом и предоставь мне цепочку своих рассуждений перед генерацией ответа:\n\n');
+      'Проанализируй и объясни следующий фрагмент кода c точки зрения разработчика ПО. Обдумывай проблему шаг за шагом и предоставь мне цепочку своих рассуждений перед генерацией ответа:\n\n');
   }
 
   public commentSelected() {
     this._processSelected(
       defaultSystemPrompt,
-      'Проанализируй следующую часть кода c точки зрения разработчика ПО. Вставь в код подробный построчный комментарий, выведи в виде кода с комментариями:\n\n');
+      'Проанализируй следующий фрагмент кода c точки зрения разработчика ПО. Вставь в код подробный построчный комментарий, выведи в виде кода с комментариями:\n\n');
   }
 
   public fixSelected() {
     this._processSelected(
       defaultSystemPrompt,
-      'Проанализируй следующую часть кода c точки зрения разработчика ПО. Найди и исправь вероятные ошибки, выведи в виде кода с комментариями:\n\n');
+      'Проанализируй следующий фрагмент кода c точки зрения разработчика ПО. Найди ошибки и потенциальные проблемы:\n\n');
   }
 
-  public modernSelected() {
+  public translateSelected() {
     this._processSelected(
       defaultSystemPrompt,
-      'Проанализируй следующую часть кода c точки зрения разработчика ПО. Произведи оптимизацию кода, добавь DocString и комментарии, выведи в виде кода с комментариями:\n\n');
+      'Переведи следующий фрагмент текста на русский язык. Сохраняй исходное форматирование и разметку языка:\n\n');
+  }
+
+  private _processSelected(sPrompt: string, uPrompt: string) {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      return;
+    }
+    const selection = editor.document.getText(editor.selection);
+    if (!selection) {
+      return;
+    }
+    this.clearChat();
+    this.setSystemPrompt(sPrompt);
+    vscode.commands.executeCommand('workbench.view.extension.yaGPT');
+    this.sendMessage(uPrompt + '```\n' + selection + '\n```');
+  }
+
+  public setSystemPrompt(prompt: string) {
+    chatState.push({ role: 'system', text: prompt, });
   }
 
   public sendMessage(message: string) {
@@ -221,25 +263,6 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
           `ОШИБКА ОТ yaGPT: ${JSON.stringify(err)}`
         );
       });
-  }
-
-  public setSystemPrompt(prompt: string) {
-    chatState.push({ role: 'system', text: prompt, });
-  }
-
-  private _processSelected(sPrompt: string, uPrompt: string) {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      return;
-    }
-    const selection = editor.document.getText(editor.selection);
-    if (!selection) {
-      return;
-    }
-    this.clearChat();
-    this.setSystemPrompt(sPrompt);
-    vscode.commands.executeCommand('workbench.view.extension.yaGPT');
-    this.sendMessage(uPrompt + '```\n' + selection + '\n```');
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {

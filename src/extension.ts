@@ -131,7 +131,7 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'sendMessage': {
-          this.sendMessage(data.message);
+          this.sendMessage(data.message, data.model);
           break;
         }
       }
@@ -214,7 +214,10 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
     chatState.push({ role: 'system', text: prompt, });
   }
 
-  public sendMessage(message: string) {
+  public sendMessage(
+        message: string,
+        model: 'yandexgpt-lite' | 'yandexgpt' = 'yandexgpt-lite'
+    ) {
     // Добавляем сообщение в массив chatState с ролью «user».
     chatState.push({ role: 'user', text: message });
     // Обновляем состояние чата с помощью команды yaGPT.updateChat.
@@ -222,16 +225,16 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
 
     const settings: settings | undefined = this.globalState.get('settings');
 
-    // Создаём новый объект newPost, который содержит информацию о модели GPT, параметрах завершения и сообщениях из массива chatState.
-    const newPost = {
-      modelUri: `gpt://${settings?.catalogueId}/yandexgpt`,
-      completionOptions: {
-        stream: false,
-        temperature: 0.4,
-        maxTokens: '2000',
-      },
-      messages: chatState,
-    };
+        // Создаём новый объект newPost, который содержит информацию о модели GPT, параметрах завершения и сообщениях из массива chatState.
+        const newPost = {
+            modelUri: `gpt://${settings?.catalogueId}/${model}`,
+            completionOptions: {
+                stream: false,
+                temperature: 0.4,
+                maxTokens: '2000',
+            },
+            messages: chatState,
+        };
 
     fetch(
       'https://llm.api.cloud.yandex.net/foundationModels/v1/completion',
@@ -301,6 +304,11 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
         <div id="chat-area" class="hide">
                     <div id="response-box" class="chat-box"></div>
                     <textarea id="user-message-input" class="user-input" rows="5" cols="33" placeholder="Пиши сюда"></textarea>
+                    <label for="ya-gpt-model">Модель: </label>
+                    <select id="ya-gpt-model" class="model-select">
+                        <option value="yandexgpt-lite">YandexGPT Lite</option>
+                        <option value="yandexgpt">YandexGPT Pro</option>
+                    </select>
                     <button id="send-btn" class="base-btn">Отправить</button>
                 </div>
                 <div id="home-block" class="hide">

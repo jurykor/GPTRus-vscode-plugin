@@ -216,7 +216,7 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
 
   public sendMessage(
         message: string,
-        model: 'yandexgpt-lite' | 'yandexgpt' = 'yandexgpt-lite'
+        model: 'yandexgpt-lite' | 'yandexgpt' = 'yandexgpt'
     ) {
     // Добавляем сообщение в массив chatState с ролью «user».
     chatState.push({ role: 'user', text: message });

@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('yaGPT.clearChat', (resp) => {
       provider.clearChat();
-      provider.setSystemPrompt(defaultSystemPrompt);
+      provider.setSystemPrompt(vscode.workspace.getConfiguration('yaGPT').SystemPrompt);
     })
   );
   context.subscriptions.push(
@@ -131,7 +131,7 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'sendMessage': {
-          this.sendMessage(data.message, data.model);
+          this.sendMessage(data.message);
           break;
         }
       }
@@ -173,29 +173,25 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
 
   public explainSelected() {
     this._processSelected(
-      defaultSystemPrompt,
       'Проанализируй и объясни следующий фрагмент кода c точки зрения разработчика ПО. Обдумывай проблему шаг за шагом и предоставь мне цепочку своих рассуждений перед генерацией ответа:\n\n');
   }
 
   public commentSelected() {
     this._processSelected(
-      defaultSystemPrompt,
       'Проанализируй следующий фрагмент кода c точки зрения разработчика ПО. Вставь в код подробный построчный комментарий, выведи в виде кода с комментариями:\n\n');
   }
 
   public fixSelected() {
     this._processSelected(
-      defaultSystemPrompt,
       'Проанализируй следующий фрагмент кода c точки зрения разработчика ПО. Найди ошибки и потенциальные проблемы:\n\n');
   }
 
   public translateSelected() {
     this._processSelected(
-      defaultSystemPrompt,
       'Переведи следующий фрагмент текста на русский язык. Сохраняй исходное форматирование и разметку языка:\n\n');
   }
 
-  private _processSelected(sPrompt: string, uPrompt: string) {
+  private _processSelected(uPrompt: string) {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
@@ -205,7 +201,7 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
       return;
     }
     this.clearChat();
-    this.setSystemPrompt(sPrompt);
+    this.setSystemPrompt(vscode.workspace.getConfiguration('yaGPT').SystemPrompt);
     vscode.commands.executeCommand('workbench.view.extension.yaGPT');
     this.sendMessage(uPrompt + '```\n' + selection + '\n```');
   }
@@ -215,9 +211,8 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
   }
 
   public sendMessage(
-        message: string,
-        model: 'yandexgpt-lite' | 'yandexgpt' = 'yandexgpt'
-    ) {
+    message: string
+  ) {
     // Добавляем сообщение в массив chatState с ролью «user».
     chatState.push({ role: 'user', text: message });
     // Обновляем состояние чата с помощью команды yaGPT.updateChat.
@@ -225,16 +220,16 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
 
     const settings: settings | undefined = this.globalState.get('settings');
 
-        // Создаём новый объект newPost, который содержит информацию о модели GPT, параметрах завершения и сообщениях из массива chatState.
-        const newPost = {
-            modelUri: `gpt://${settings?.catalogueId}/${model}`,
-            completionOptions: {
-                stream: false,
-                temperature: 0.4,
-                maxTokens: '2000',
-            },
-            messages: chatState,
-        };
+    // Создаём новый объект newPost, который содержит информацию о модели GPT, параметрах завершения и сообщениях из массива chatState.
+    const newPost = {
+      modelUri: `gpt://${settings?.catalogueId}/${vscode.workspace.getConfiguration('yaGPT').model}`,
+      completionOptions: {
+        stream: false,
+        temperature: vscode.workspace.getConfiguration('yaGPT').temperature,
+        maxTokens: '2000',
+      },
+      messages: chatState,
+    };
 
     fetch(
       'https://llm.api.cloud.yandex.net/foundationModels/v1/completion',
@@ -304,11 +299,13 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
         <div id="chat-area" class="hide">
                     <div id="response-box" class="chat-box"></div>
                     <textarea id="user-message-input" class="user-input" rows="5" cols="33" placeholder="Пиши сюда"></textarea>
+<!--
                     <label for="ya-gpt-model">Модель: </label>
                     <select id="ya-gpt-model" class="model-select">
                         <option value="yandexgpt-lite">YandexGPT Lite</option>
                         <option value="yandexgpt">YandexGPT Pro</option>
                     </select>
+-->
                     <button id="send-btn" class="base-btn">Отправить</button>
                 </div>
                 <div id="home-block" class="hide">

@@ -2,7 +2,7 @@
   "name": "yagpt",
   "displayName": "yaGPT",
   "description": "Chat for yandexGPT",
-  "version": "0.4.0",
+  "version": "0.4.0-4",
   "publisher": "jurykor",
   "private": false,
   "license": "MIT",
@@ -101,6 +101,35 @@
           "command": "yaGPT.translateSelected"
         }
       ]
+    },
+    "configuration": {
+      "title": "yaGPT",
+      "properties": {
+        "yaGPT.model": {
+          "type": "string",
+          "enum": [
+            "yandexgpt-lite",
+            "yandexgpt"
+          ],
+          "enumItemLabels": [
+            "YandexGPT Lite",
+            "YandexGPT Pro"
+          ],
+          "default": "yandexgpt-lite",
+          "description": "Идентификатор модели в YandexGPT API"
+        },
+        "yaGPT.temperature": {
+          "type": "number",
+          "default": 0.3,
+          "description": "Принимает значения от 0 (включительно) до 1 (включительно)."
+        },
+        "yaGPT.SystemPrompt": {
+          "type": "string",
+          "editPresentation": "multilineText",
+          "default": "Ты высококвалифицированный специалист в следующих IT областях:\n- инженер-программист (software design engineer, SDE)\n- разработчик ПО (software developer, SD)\n-инженер DevOps(DevOps engineer, DevOps)\n- системный администратор (system administrator, SA)\n- администратора баз данных (database administrator, DBA).\nРешая поставленные задачи, ты строго придерживаешься спецификаций и документации по использующимся продуктам.\nЕсли исходных данные непонятны или их недостаточно, то перед генерацией ответа, ты должен задавать вопросы для уточнения контекста.",
+          "description": "Позволяет задать контекст запроса и определить поведение модели"
+        }
+      }
     }
   },
   "scripts": {
@@ -116,7 +145,7 @@
     "@types/node": "20.x",
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-		"@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vscode/vsce": "3.1.1",
     "eslint": "^8.36.0",
     "globals": "^15.9.0",

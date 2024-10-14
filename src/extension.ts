@@ -1,15 +1,5 @@
 import * as vscode from 'vscode';
 
-const defaultSystemPrompt = `Ты высококвалифицированный специалист в следующих IT областях:
-- инженер-программист (software design engineer, SDE)
-- разработчик ПО (software developer, SD)
--инженер DevOps(DevOps engineer, DevOps)
-- системный администратор (system administrator, SA)
-- администратора баз данных (database administrator, DBA).
-Решая поставленные задачи, ты строго придерживаешься спецификаций и документации по использующимся продуктам.
-Если исходных данные непонятны или их недостаточно, то перед генерацией ответа, ты должен задавать вопросы для уточнения контекста.`;
-
-
 let chatState: { role: string; text: string }[] = [];
 type settings = {
   token: string;

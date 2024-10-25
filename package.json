@@ -133,10 +133,11 @@
     }
   },
   "scripts": {
-    "package_update": "npx npm i --package-lock-only",
-    "package_install": "npx npm ci",
-    "compile": "npx tsc -p ./",
-    "pack": "npx vsce pack",
+    "lock_packages": "npx npm i --package-lock-only",
+    "ci": "npx npm ci",
+    "build": "npx tsc --build ./tsconfig.json",
+    "vscode:prepublish": "npm run ci && npm run build",
+    "vscode:package": "npx vsce package",
     "lint": "npx eslint \"src/**/*.ts\"",
     "watch": "npx tsc -w -p ./"
   },
@@ -146,7 +147,7 @@
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vscode/vsce": "3.1.1",
+    "@vscode/vsce": "3.2.1",
     "eslint": "^8.36.0",
     "globals": "^15.9.0",
     "node": "^20.16.0",

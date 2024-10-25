@@ -6,17 +6,41 @@ type settings = {
   catalogueId: string;
 };
 
+
+/**
+ * Функция активации расширения.
+ * @param {vscode.ExtensionContext} context - Контекст расширения.
+ */
 export function activate(context: vscode.ExtensionContext) {
+  /**
+   * Создаем новый экземпляр класса ChatViewProvider.
+   * @param {vscode.ExtensionContext['extensionUri']} context.extensionUri - URI расширения.
+   * @param {vscode.ExtensionContext['globalState']} context.globalState - Глобальное состояние расширения.
+   */
   const provider = new ChatViewProvider(context.extensionUri, context.globalState);
+
+  /**
+   * Регистрируем провайдера веб-вью.
+   * @param {vscode.window.registerWebviewViewProvider} vscode.window.registerWebviewViewProvider - Провайдер веб-вью.
+   * @param {ChatViewProvider} provider - Провайдер для регистрации.
+   */
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(ChatViewProvider.viewType, provider)
   );
 
+  /**
+   * Регистрируем команду 'yaGPT.updateChat'.
+   * @param {vscode.commands.registerCommand} vscode.commands.registerCommand - Команда для регистрации.
+   * @param {(resp) => provider.updateChat(resp)} - Функция обратного вызова, которая будет выполнена при вызове команды.
+   */
   context.subscriptions.push(
     vscode.commands.registerCommand('yaGPT.updateChat', (resp) => {
       provider.updateChat(resp);
     })
   );
+
+  // Повторяем этот процесс для других команд.
+  // ...
   context.subscriptions.push(
     vscode.commands.registerCommand('yaGPT.initView', (resp) => {
       provider.initView(resp);
@@ -61,9 +85,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 
-/**
- * Provider for creating `WebviewView` elements.
- */
 class ChatViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'yaGPT.chatView';
 
@@ -76,50 +97,68 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
 
 
   /**
-   * Resolves a webview view.
-   *
-   * `resolveWebviewView` is called when a view first becomes visible. This may happen when the view is
-   * first loaded or when the user hides and then shows a view again.
-   *
-   * @param webviewView Webview view to restore. The provider should take ownership of this view. The
-   *    provider must set the webview's `.html` and hook up all webview events it is interested in.
-   * @param context Additional metadata about the view being resolved.
-   * @param token Cancellation token indicating that the view being provided is no longer needed.
-   *
-   * @returns Optional thenable indicating that the view has been fully resolved.
+   * Метод resolveWebviewView вызывается при создании WebView. Он устанавливает опции WebView, загружает HTML-страницу и обрабатывает сообщения из WebView.
+   * @param webviewView - объект WebView.
+   * @param context - контекст WebView.
+   * @param _token - токен отмены операции.
    */
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
   ) {
+    /**
+     * Сохраняем объект WebView.
+     */
     this._view = webviewView;
 
+    /**
+     * Устанавливаем опции WebView:
+     * - enableScripts: true - включает JavaScript.
+     * - localResourceRoots: [this._extensionUri] - устанавливает корневые пути для ресурсов.
+     */
     webviewView.webview.options = {
-      // Allow scripts in the webview
       enableScripts: true,
       localResourceRoots: [this._extensionUri],
     };
 
+    /**
+     * Загружаем HTML-страницу для WebView.
+     */
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
+    /**
+     * Устанавливаем обработчик сообщений из WebView.
+     */
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
+        /**
+         * Если сообщение типа 'saveSettings', сохраняем настройки в глобальном состоянии расширения.
+         */
         case 'saveSettings': {
           await this.saveSettingsInGlobalState(data.message);
           break;
         }
+        /**
+         * Если сообщение типа 'controllerOnLoaded', отображаем вкладки 'home' или 'chat' в зависимости от наличия настроек.
+         */
         case 'controllerOnLoaded': {
           vscode.commands.executeCommand(
             'yaGPT.initView',
             this.globalState.get('settings') ? 'chat' : 'home'
           );
+          /**
+           * Обновляем список сообщений.
+           */
           vscode.commands.executeCommand(
             'yaGPT.updateChat',
             chatState
           );
           break;
         }
+        /**
+         * Если сообщение типа 'sendMessage', отправляем сообщение в Yandex AI Language Models и обновляем список сообщений.
+         */
         case 'sendMessage': {
           this.sendMessage(data.message);
           break;
@@ -128,8 +167,19 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
+
+  /**
+   * Метод updateChat обновляет список сообщений в WebView.
+   * @param resp - строка, содержащая обновленные сообщения.
+   */
   public updateChat(resp: string) {
+    /**
+     * Проверяем, существует ли объект WebView.
+     */
     if (this._view) {
+      /**
+       * Отправляем сообщение в WebView с типом 'updateChat' и содержимым 'resp'.
+       */
       this._view.webview.postMessage({
         type: 'updateChat',
         message: resp,
@@ -137,8 +187,19 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+
+  /**
+   * Метод initView отображает определенную вкладку в WebView.
+   * @param type - тип вкладки, которую нужно отобразить.
+   */
   public initView(type: string) {
+    /**
+     * Проверяем, существует ли объект WebView.
+     */
     if (this._view) {
+      /**
+       * Отправляем сообщение в WebView с типом 'initView' и содержимым 'type'.
+       */
       this._view.webview.postMessage({
         type: 'initView',
         message: type,
@@ -146,71 +207,149 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+
+  /**
+   * Метод saveSettingsInGlobalState сохраняет настройки в глобальном состоянии расширения и отображает вкладку 'chat'.
+   * @param settings - объект, содержащий настройки.
+   */
   public async saveSettingsInGlobalState(settings: settings) {
+    /**
+     * Сохраняем настройки в глобальном состоянии.
+     */
     await this.globalState.update('settings', settings);
+    /**
+     * Выводим сообщение об успешном сохранении.
+     */
     vscode.window.showInformationMessage(`Настройки сохранены`);
+    /**
+     * Переходим к вкладок 'chat'.
+     */
     vscode.commands.executeCommand('yaGPT.initView', 'chat');
   }
 
+
+  /**
+   * Метод clearChat очищает список сообщений.
+   */
   public clearChat() {
+    /**
+     * Очищаем список сообщений.
+     */
     chatState = [];
+    /**
+     * Обновляем список сообщений.
+     */
     vscode.commands.executeCommand('yaGPT.updateChat', chatState);
   }
 
+
+  /**
+   * Метод goToSettings переходит к настройкам.
+   */
   public goToSettings() {
+    /**
+     * Переходим к настройкам.
+     */
     vscode.commands.executeCommand('yaGPT.initView', 'home');
   }
 
+
+  /**
+   * Метод explainSelected обрабатывает выбранный текст и отправляет его в Yandex AI Language Models для анализа и объяснения.
+   */
   public explainSelected() {
     this._processSelected(
       'Проанализируй и объясни следующий фрагмент кода c точки зрения разработчика ПО. Обдумывай проблему шаг за шагом и предоставь мне цепочку своих рассуждений перед генерацией ответа:\n\n');
   }
 
+  /**
+   * Метод commentSelected обрабатывает выбранный текст и отправляет его в Yandex AI Language Models для добавления комментариев.
+   */
   public commentSelected() {
     this._processSelected(
       'Проанализируй следующий фрагмент кода c точки зрения разработчика ПО. Вставь в код подробный построчный комментарий, выведи в виде кода с комментариями:\n\n');
   }
 
+  /**
+   * Метод fixSelected обрабатывает выбранный текст и отправляет его в Yandex AI Language Models для исправления ошибок.
+   */
   public fixSelected() {
     this._processSelected(
       'Проанализируй следующий фрагмент кода c точки зрения разработчика ПО. Найди ошибки и потенциальные проблемы:\n\n');
   }
 
+  /**
+   * Метод translateSelected обрабатывает выбранный текст и отправляет его в Yandex AI Language Models для перевода на русский язык.
+   */
   public translateSelected() {
     this._processSelected(
       'Переведи следующий фрагмент текста на русский язык. Сохраняй исходное форматирование и разметку языка:\n\n');
   }
 
+
+  /**
+   * Метод _processSelected обрабатывает выбранный текст.
+   * @param uPrompt - пользовательский промпт, добавляемый к выбранному тексту.
+   */
   private _processSelected(uPrompt: string) {
+    // Получение активного редактора текста
     const editor = vscode.window.activeTextEditor;
+
+    // Если редактор не активен, функция завершает свою работу
     if (!editor) {
       return;
     }
+
+    // Получение выбранного текста
     const selection = editor.document.getText(editor.selection);
+
+    // Если текст не выбран, функция завершает свою работу
     if (!selection) {
       return;
     }
+
+    // Очистка чата
     this.clearChat();
+
+    // Установка системного запроса
     this.setSystemPrompt(vscode.workspace.getConfiguration('yaGPT').SystemPrompt);
+
+    // Открытие панели ChatGPT
     vscode.commands.executeCommand('workbench.view.extension.yaGPT');
+
+    // Отправка пользовательского запроса и выбранного текста в GPT
     this.sendMessage(uPrompt + '```\n' + selection + '\n```');
   }
 
   public setSystemPrompt(prompt: string) {
+    // Установка системного запроса
     chatState.push({ role: 'system', text: prompt, });
   }
 
-  public sendMessage(
-    message: string
-  ) {
-    // Добавляем сообщение в массив chatState с ролью «user».
+
+  /**
+   * Отправка сообщения в чат с помощью Yandex.Cloud LLM.
+   * @param {string} message - сообщение, которое нужно отправить в чат
+   */
+  public sendMessage(message: string) {
+    /**
+     * Добавление сообщения в chatState с ролью 'user'.
+     */
     chatState.push({ role: 'user', text: message });
-    // Обновляем состояние чата с помощью команды yaGPT.updateChat.
+
+    /**
+     * Вызов команды для обновления чата.
+     */
     vscode.commands.executeCommand('yaGPT.updateChat', chatState);
 
+    /**
+     * Получение настроек из глобального состояния.
+     */
     const settings: settings | undefined = this.globalState.get('settings');
 
-    // Создаём новый объект newPost, который содержит информацию о модели GPT, параметрах завершения и сообщениях из массива chatState.
+    /**
+     * Создание нового объекта newPost для передачи в API.
+     */
     const newPost = {
       modelUri: `gpt://${settings?.catalogueId}/${vscode.workspace.getConfiguration('yaGPT').model}`,
       completionOptions: {
@@ -221,6 +360,9 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
       messages: chatState,
     };
 
+    /**
+     * Отправка POST-запроса к API Yandex.Cloud LLM.
+     */
     fetch(
       'https://llm.api.cloud.yandex.net/foundationModels/v1/completion',
       {
@@ -232,19 +374,33 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
           'x-folder-id': `${settings?.catalogueId}`,
         },
       }
-    ) // Отправляем запрос на сервер с помощью fetch. Запрос содержит данные для генерации ответа от модели.
+    )
+      /**
+       * Преобразование ответа API в JSON.
+       */
       .then((response) => response.json())
+      /**
+       * Обработка ответа API.
+       */
       .then((response) => {
         const result = response.result;
-        // Обрабатываем ответ сервера. Если в ответе есть ошибка, то отображается соответствующее сообщение об ошибке. В противном случае результат добавляется в чат.
+        /**
+         * Если в ответе есть ошибка, показывается сообщение об ошибке.
+         */
         if (response.error) {
           vscode.window.showErrorMessage(
             `ОШИБКА ОТ yaGPT: ${JSON.stringify(response)}`
           );
         }
+        /**
+         * Добавление результата ответа в chatState и обновление чата.
+         */
         chatState.push(result?.alternatives[0].message);
         vscode.commands.executeCommand('yaGPT.updateChat', chatState);
       })
+      /**
+       * Обработка ошибок при выполнении запроса.
+       */
       .catch((err) => {
         console.log('error', err);
         vscode.window.showErrorMessage(
@@ -253,14 +409,18 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
       });
   }
 
+  /**
+   * Генерирует HTML для WebView.
+   *
+   * @param {vscode.Webview} webview - объект WebView.
+   * @returns {string} HTML для WebView.
+   */
   private _getHtmlForWebview(webview: vscode.Webview) {
     console.log('_getHtmlForWebview');
-    // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
+
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js')
     );
-
-    // Do the same for the stylesheet.
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css')
     );
@@ -271,7 +431,6 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this._extensionUri, 'media', 'main.css')
     );
 
-    // Use a nonce to only allow a specific script to be run.
     const nonce = getNonce();
 
     return `<!DOCTYPE html>
@@ -289,13 +448,6 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
         <div id="chat-area" class="hide">
                     <div id="response-box" class="chat-box"></div>
                     <textarea id="user-message-input" class="user-input" rows="5" cols="33" placeholder="Пиши сюда"></textarea>
-<!--
-                    <label for="ya-gpt-model">Модель: </label>
-                    <select id="ya-gpt-model" class="model-select">
-                        <option value="yandexgpt-lite">YandexGPT Lite</option>
-                        <option value="yandexgpt">YandexGPT Pro</option>
-                    </select>
--->
                     <button id="send-btn" class="base-btn">Отправить</button>
                 </div>
                 <div id="home-block" class="hide">
@@ -324,6 +476,11 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
   }
 }
 
+/**
+ * Генерирует случайную строку из 32 символов, состоящую из алфавита и цифр.
+ *
+ * @returns {string} Случайная строка из 32 символов.
+ */
 function getNonce() {
   let text = '';
   const possible =

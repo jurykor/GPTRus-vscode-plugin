@@ -133,11 +133,11 @@
     }
   },
   "scripts": {
-    "lock_packages": "npx npm i --package-lock-only",
-    "ci": "npx npm ci",
+    "lock_packages": "npm i --package-lock-only",
+    "ci": "npm ci",
     "build": "npx tsc --build ./tsconfig.json",
-    "vscode:prepublish": "npm run ci && npm run build",
-    "vscode:package": "npx vsce package",
+    "vscode:prepublish": "npm run build",
+    "vscode:package": "npx @vscode/vsce package",
     "lint": "npx eslint \"src/**/*.ts\"",
     "watch": "npx tsc -w -p ./"
   },

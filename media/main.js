@@ -12,7 +12,9 @@ import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/
     // eslint-disable-next-line no-undef
     const vscode = acquireVsCodeApi();
     const { markedHighlight } = globalThis.markedHighlight;
+
     const { Marked } = globalThis.marked;
+
     const marked = new Marked(
       markedHighlight({
         langPrefix: 'hljs language-',
@@ -168,6 +170,7 @@ import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/
      */
     function sendMessage() {
       const userMessage = userMessageInput?.value;
+      
       vscode.postMessage({ type: 'sendMessage', message: userMessage });
     }
   })();

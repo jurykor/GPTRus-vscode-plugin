@@ -147,14 +147,13 @@
     "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vscode/vsce": "3.2.1",
+    "@vscode/vsce": "3.1.1",
     "eslint": "^8.36.0",
     "globals": "^15.9.0",
     "node": "^20.16.0",
     "typescript": "^5.4.5"
   },
   "files": [
-    ".vscode/**",
     "media/**",
     "out/**",
     "src/**",

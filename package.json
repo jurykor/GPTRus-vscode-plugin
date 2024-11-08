@@ -2,7 +2,7 @@
   "name": "yagpt",
   "displayName": "yaGPT",
   "description": "Chat for yandexGPT",
-  "version": "0.4.1-2",
+  "version": "0.4.1-3",
   "publisher": "jurykor",
   "private": false,
   "license": "MIT",
@@ -121,7 +121,7 @@
             "YandexGPT Pro - RC",
             "YandexGPT Pro 32k - RC"
           ],
-          "default": "yandexgpt-lite",
+          "default": "yandexgpt-lite/latest",
           "description": "Идентификатор модели в YandexGPT API"
         },
         "yaGPT.temperature": {

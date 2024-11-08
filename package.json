@@ -2,7 +2,7 @@
   "name": "yagpt",
   "displayName": "yaGPT",
   "description": "Chat for yandexGPT",
-  "version": "0.4.0",
+  "version": "0.4.1-1",
   "publisher": "jurykor",
   "private": false,
   "license": "MIT",
@@ -109,11 +109,15 @@
           "type": "string",
           "enum": [
             "yandexgpt-lite",
-            "yandexgpt"
+            "yandexgpt",
+            "yandexgpt-rc",
+            "yandexgpt-32k-rc"
           ],
           "enumItemLabels": [
             "YandexGPT Lite",
-            "YandexGPT Pro"
+            "YandexGPT 3 Pro",
+            "YandexGPT 4 Pro - RC",
+            "YandexGPT 4 Pro 32k - RC"
           ],
           "default": "yandexgpt-lite",
           "description": "Идентификатор модели в YandexGPT API"

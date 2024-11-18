@@ -2,7 +2,7 @@
   "name": "yagpt",
   "displayName": "yaGPT",
   "description": "Chat for yandexGPT",
-  "version": "0.4.1-4",
+  "version": "0.4.1-5",
   "publisher": "jurykor",
   "private": false,
   "license": "MIT",

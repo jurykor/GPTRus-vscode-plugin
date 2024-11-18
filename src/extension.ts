@@ -370,8 +370,9 @@ class ChatViewProvider implements vscode.WebviewViewProvider {
         body: JSON.stringify(newPost),
         headers: {
           'content-type': 'application/json',
-          Authorization: `Api-Key ${settings?.token}`,
+          'Authorization': `Bearer ${settings?.token}`,
           'x-folder-id': `${settings?.catalogueId}`,
+          'x-data-logging-enabled': 'false'
         },
       }
     )
